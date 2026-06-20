@@ -1,0 +1,34 @@
+{
+  "name": "busyoffice",
+  "version": "0.1.0",
+  "description": "CLI for Busy Office — wire Claude Code hooks and emit telemetry events",
+  "type": "module",
+  "bin": {
+    "busyoffice": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --test dist/**/*.test.js",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm build"
+  },
+  "dependencies": {
+    "commander": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/ThePFMind/busy-office-cli.git"
+  },
+  "license": "UNLICENSED"
+}
