@@ -2,6 +2,7 @@
 import { Command } from 'commander';
 import { init }    from './init.js';
 import { emit }    from './emit.js';
+import { login }   from './login.js';
 
 const program = new Command()
   .name('busyoffice')
@@ -35,10 +36,16 @@ program
 // ── busyoffice login ──────────────────────────────────────────────────────────
 program
   .command('login')
-  .description('Authenticate via Google SSO (available at beta)')
-  .action(() => {
-    console.log('SSO login is available from beta. For alpha, use --token with busyoffice init.');
-    process.exit(0);
+  .description('Authenticate via browser and configure the CLI')
+  .option('--url <url>', 'Busy Office app URL', 'https://busy-office-staging.pages.dev')
+  .option('--settings <path>', 'Path to .claude/settings.json (default: auto-detect)')
+  .action(async (opts) => {
+    try {
+      await login({ url: opts.url, settingsPath: opts.settings });
+    } catch (err) {
+      console.error(String(err));
+      process.exit(1);
+    }
   });
 
 program.parse();
