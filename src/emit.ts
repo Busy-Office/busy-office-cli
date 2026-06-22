@@ -1,4 +1,4 @@
-import { readConfig } from './config.js';
+import { readConfig, readFullConfig } from './config.js';
 import { EVENT_TYPES, type Envelope } from './contracts.js';
 import { appendFileSync, mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
@@ -99,8 +99,13 @@ export async function emit(args: {
   const { detail, target } = enrichFromHookInput(args, hookInput);
 
   try {
-    const config = readConfig();
-    if (!config) return logAndExit('no config — run busyoffice init first');
+    // BUSYOFFICE_PROJECT is set per-hook by `busyoffice init` (ADR-50 multi-project config).
+    const host = process.env.BUSYOFFICE_PROJECT;
+    const config = readConfig(host);
+    if (!config) return logAndExit('no config — run busyoffice login then busyoffice init');
+
+    const fullConfig = readFullConfig();
+    const workerId = fullConfig?.workerId ?? 'unknown';
 
     if (!EVENT_TYPES.includes(args.type)) {
       return logAndExit(`unknown event type: ${args.type}`);
@@ -108,7 +113,7 @@ export async function emit(args: {
 
     const envelope: Envelope = {
       ts:     Math.floor(Date.now() / 1000),
-      worker: config.workerId,
+      worker: workerId,
       type:   args.type,
       ...(args.task && { task:   args.task }),
       ...(detail    && { detail }),

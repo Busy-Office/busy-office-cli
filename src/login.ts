@@ -2,8 +2,8 @@ import { createServer as createNetServer } from 'node:net';
 import { createServer as createHttpServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { URL } from 'node:url';
-import { writeConfig } from './config.js';
-import { init } from './init.js';
+import { writeProjectConfig } from './config.js';
+import { deriveWorkerId } from './worker-id.js';
 
 const TIMEOUT_MS = 120_000;
 
@@ -39,7 +39,7 @@ h1{margin:0 0 .5rem;font-size:1.4rem;color:#1a1a1a}p{color:#555;margin:0}</style
 <body><div class="card"><h1>✓ CLI authorized</h1><p>You can close this tab and return to the terminal.</p></div></body>
 </html>`;
 
-export async function login(opts: { url: string; settingsPath?: string }): Promise<void> {
+export async function login(opts: { url: string }): Promise<void> {
   const port = await findFreePort();
   const callbackUrl = `http://localhost:${port}/callback`;
   const loginUrl = `${opts.url.replace(/\/$/, '')}/cli-auth?callback=${encodeURIComponent(callbackUrl)}`;
@@ -77,7 +77,14 @@ export async function login(opts: { url: string; settingsPath?: string }): Promi
       clearTimeout(timer);
       server.close(() => {
         try {
-          init({ ingestUrl, token, settingsPath: opts.settingsPath });
+          const host = new URL(ingestUrl).hostname;
+          const workerId = deriveWorkerId();
+          writeProjectConfig({ host, ingestUrl, token, workerId });
+          console.log(`✓ Credentials saved (project: ${host})`);
+          console.log(`✓ Worker ID: ${workerId}`);
+          console.log('');
+          console.log('Next: cd into your Claude Code project and run:');
+          console.log('  busyoffice init');
           resolve();
         } catch (err) {
           reject(err);
